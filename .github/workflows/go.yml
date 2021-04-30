@@ -58,7 +58,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
-        asset_name: tranhost-client.app
+        asset_name: tranhost-client.app.zip
         tag: ${{ github.ref }}
         overwrite: true
         body: ""
