@@ -17,8 +17,10 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
-
-    
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r21d
     - name: Get fyne-cross
       run: go get github.com/fyne-io/fyne-cross
       
@@ -28,6 +30,9 @@ jobs:
       run: fyne-cross windows
     - name: Build darwin
       run: fyne-cross darwin
+    
+    - name: Build android
+      run: ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} fyne package -os android -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png 
     - name: Upload linux binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
@@ -54,6 +59,15 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
         asset_name: tranhost-client.app
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: ""
+    - name: Upload android package to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: /home/runner/work/tranhost-client/tranhost-client/TranHost.apk
+        asset_name: TranHost.apk
         tag: ${{ github.ref }}
         overwrite: true
         body: ""
