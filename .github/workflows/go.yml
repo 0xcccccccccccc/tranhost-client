@@ -20,7 +20,7 @@ jobs:
 
     
     - name: Get fyne-cross
-      run: go get github/fyne-io/fyne-cross
+      run: go get github.com/fyne-io/fyne-cross
       
     - name: Build linux
       run: fyne-cross linux
