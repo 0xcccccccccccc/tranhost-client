@@ -1,0 +1,31 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    
+    - name: Get fyne-cross
+      run: go get github/fyne-io/fyne-cross
+      
+    - name: Build linux
+      run: fyne-cross linux
+    - name: Build windows
+      run: fyne-cross windows
+    - name: Build darwin
+      run: fyne-cross darwin
+    
