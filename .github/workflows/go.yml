@@ -46,11 +46,13 @@ jobs:
         tag: ${{ github.ref }}
         overwrite: true
         body: ""
+    - name: Zip app folder for darwin release
+      run: zip -q -r /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app
     - name: Upload darwin binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app
+        file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
         asset_name: tranhost-client.app
         tag: ${{ github.ref }}
         overwrite: true
