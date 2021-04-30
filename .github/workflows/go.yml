@@ -21,6 +21,10 @@ jobs:
       id: setup-ndk
       with:
         ndk-version: r21d
+        
+    - name: Get fyne
+      run: go get github.com/fyne-io/fyne
+      
     - name: Get fyne-cross
       run: go get github.com/fyne-io/fyne-cross
       
@@ -68,6 +72,34 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /home/runner/work/tranhost-client/tranhost-client/TranHost.apk
         asset_name: TranHost.apk
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: ""
+  build-ios:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+        
+    - name: Get fyne
+      run: go get github.com/fyne-io/fyne
+      
+    - name: Get fyne-cross
+      run: go get github.com/fyne-io/fyne-cross
+      
+    - name: Build ios
+      run: fyne package -os ios -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png 
+ 
+    - name: Upload ios package to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: /home/runner/work/tranhost-client/tranhost-client/TranHost.app
+        asset_name: TranHost.app
         tag: ${{ github.ref }}
         overwrite: true
         body: ""
