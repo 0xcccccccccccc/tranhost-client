@@ -36,7 +36,7 @@ jobs:
       run: fyne-cross darwin
     
     - name: Build android
-      run: ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} fyne package -os android -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png 
+      run: ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} /home/runner/go/bin/fyne package -os android -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png 
     - name: Upload linux binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
