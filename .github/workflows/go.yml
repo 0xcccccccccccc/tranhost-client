@@ -70,8 +70,8 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: /home/runner/work/tranhost-client/tranhost-client/TranHost.apk
-        asset_name: TranHost.apk
+        file: /home/runner/work/tranhost-client/tranhost-client/TranClient.apk
+        asset_name: TranClient.apk
         tag: ${{ github.ref }}
         overwrite: true
         body: ""
@@ -90,7 +90,8 @@ jobs:
       
     - name: Get fyne-cross
       run: go get github.com/fyne-io/fyne-cross
-      
+    - name: Go clean
+      run: go clean
     - name: Build ios
       run: /Users/runner/go/bin/fyne package -os ios -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png 
     - name: Zip app folder for darwin release
