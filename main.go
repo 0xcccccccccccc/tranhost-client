@@ -1,19 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/widget"
-	"github.com/mozillazg/go-pinyin"
-	"github.com/skip2/go-qrcode"
+	"github.com/OneOfOne/xxhash"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -69,72 +63,21 @@ func fileTransferCallback(w http.ResponseWriter, r *http.Request) {
 	//Send the file
 	//We read 512 bytes from the file already, so we reset the offset back to 0
 	Openfile.Seek(0, 0)
-	application.SendNotification(&fyne.Notification{Title: "传输开始", Content: "请求方:" + r.RemoteAddr})
+	//application.SendNotification(&fyne.Notification{Title: "传输开始", Content: "请求方:" + r.RemoteAddr})
 	io.Copy(w, Openfile) //'Copy' the file to the client
-	application.SendNotification(&fyne.Notification{Title: "传输完成", Content: "请求方:" + r.RemoteAddr})
+	//application.SendNotification(&fyne.Notification{Title: "传输完成", Content: "请求方:" + r.RemoteAddr})
 	return
 }
-
-func fileOpenCallback(closer fyne.URIReadCloser, err error) {
-	if err == nil {
-		uri = closer.URI()
-
-		http.HandleFunc("/"+uri.Name(), fileTransferCallback)
-
-		if p2pStatus.protocol == IPV6 {
-			go http.ListenAndServe("[::]:60000", nil)
-		} else {
-			go http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(p2pStatus.inner_port)), nil)
-		}
-		password := ""
-		pe := widget.NewPasswordEntry()
-		form := []*widget.FormItem{{Text: "密码", Widget: pe}}
-		dialog.NewForm("设置密码", "设定密码", "不需要", form, func(b bool) {
-			if b {
-				md5ctx := md5.New()
-				md5ctx.Write([]byte(pe.Text))
-				cipherStr := md5ctx.Sum(nil)
-				password = hex.EncodeToString(cipherStr)
-			} else {
-				password = ""
-			}
-			resp, err := http.Post("https://"+SERVER_ADDR+"/postfile", "application/x-www-form-urlencoded",
-				strings.NewReader( /*"protocol="+string(p2pStatus.protocol)+"&"+*/
-					"ip="+p2pStatus.ip+"&"+
-						"port="+strconv.Itoa(int(p2pStatus.external_port))+"&"+
-						"filename="+uri.Name()+"&"+
-						"password="+password+"&"+
-						"captcha="+strconv.Itoa(captchaCalc(p2pStatus.ip+strconv.Itoa(int(p2pStatus.external_port))+uri.Name()))))
-			if err == nil {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err == nil && resp.Status == "200 OK" {
-					mainView.fileLabel.SetText("https://" + SERVER_ADDR + "" + string(body))
-					mainView.fileLabel.SetURLFromString("https://" + SERVER_ADDR + string(body))
-					mainView.pinyinLabel.SetText(strings.Join(pinyin.LazyPinyin(string(body), pinyin.Args{Style: pinyin.Tone}), "/"))
-					var png []byte
-					png, _ = qrcode.Encode("https://"+SERVER_ADDR+string(body), qrcode.Medium, 256)
-					img := canvas.NewImageFromReader(bytes.NewReader(png), "qrcode.png")
-					img.SetMinSize(fyne.Size{
-						Width:  256,
-						Height: 256,
-					})
-					dialog.ShowCustom("分享成功", "返回", img, window)
-					mainView.successLabel.SetText("分享成功，关闭程序以取消分享")
-					mainView.browseButton.SetText("显示二维码")
-					mainView.browseButton.OnTapped = func() {
-						dialog.ShowCustom("分享成功", "返回", img, window)
-					}
-
-				} else {
-					dialog.ShowError(errors.New("与服务器的连接中断，请重试"), window)
-				}
-
-			}
-		}, window).Show()
-
-	}
+func appendHash(uuid string, path string) {
+	f, _ := os.Open(path)
+	h := xxhash.New32()
+	io.Copy(h, f)
+	checksum := strconv.FormatInt(int64(h.Sum32()), 16)
+	http.Post("https://"+SERVER_ADDR+"/appendhash", "application/x-www-form-urlencoded",
+		strings.NewReader( /*"protocol="+string(p2pStatus.protocol)+"&"+*/
+			"hash="+checksum+"&"+"uuid="+uuid))
 }
+
 func InitProcess() {
 	// Disable HTTP Proxies
 	os.Setenv("https_proxy", "")
@@ -147,13 +90,14 @@ func InitProcess() {
 			os.Exit(-1)
 		}, window)
 	}
-	window.Resize(fyne.Size{Height: 600, Width: 800})
+	window.Resize(fyne.Size{Width: 400, Height: 800})
 	window.SetContent(mainView.mainContent)
 }
 func main() {
 	application = app.New()
 	application.Settings().SetTheme(&myTheme{})
 	window = application.NewWindow("Tran")
+
 	go InitProcess()
 	window.SetContent(NewWaitContainer())
 	window.Resize(fyne.Size{Width: 400, Height: 50})
