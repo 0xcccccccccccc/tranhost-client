@@ -33,7 +33,7 @@ jobs:
       - name: Build windows
         run: fyne-cross windows
       - name: Build darwin
-        run: fyne-cross darwin
+        run: fyne-cross darwin -app-id cn.edu.bupt.sdmda.tranclient
 
       - name: Build android
         run: ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} /home/runner/go/bin/fyne package -os android -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png
