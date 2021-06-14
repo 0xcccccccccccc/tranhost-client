@@ -32,8 +32,8 @@ jobs:
         run: fyne-cross linux
       - name: Build windows
         run: fyne-cross windows
-      - name: Build darwin
-        run: fyne-cross darwin -app-id cn.edu.bupt.sdmda.tranclient
+#       - name: Build darwin
+#         run: fyne-cross darwin -app-id cn.edu.bupt.sdmda.tranclient
 
       - name: Build android
         run: ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} /home/runner/go/bin/fyne package -os android -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png
@@ -55,17 +55,17 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           body: ""
-      - name: Zip app folder for darwin release
-        run: zip -q -r /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app
-      - name: Upload darwin binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
-          asset_name: tranhost-client.app.zip
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: ""
+#       - name: Zip app folder for darwin release
+#         run: zip -q -r /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app
+#       - name: Upload darwin binaries to release
+#         uses: svenstaro/upload-release-action@v2
+#         with:
+#           repo_token: ${{ secrets.GITHUB_TOKEN }}
+#           file: /home/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
+#           asset_name: tranhost-client.app.zip
+#           tag: ${{ github.ref }}
+#           overwrite: true
+#           body: ""
       - name: Upload android package to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -75,34 +75,33 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           body: ""
-          #   build-ios:
-          #     runs-on: macos-latest
-          #     steps:
-          #     - uses: actions/checkout@v2
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+            go-version: 1.15
 
-          #     - name: Set up Go
-          #       uses: actions/setup-go@v2
-          #       with:
-          #         go-version: 1.15
+      - name: Get fyne
+        run: go install fyne.io/fyne/v2/cmd/fyne
+  
+      - name: Get fyne-cross
+        run: go get github.com/fyne-io/fyne-cross
+      - name: Go clean
+        run: go clean
+      - name: Build darwin
+        run: /Users/runner/go/bin/fyne-cross darwin --app-id cn.edu.bupt.sdmda.tranclient
+      - name: Zip app folder for darwin release
+        run: zip -q -r /Users/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip /Users/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app
 
-        #     - name: Get fyne
-        #       run: go install fyne.io/fyne/v2/cmd/fyne
-
-  #     - name: Get fyne-cross
-  #       run: go get github.com/fyne-io/fyne-cross
-  #     - name: Go clean
-  #       run: go clean
-  #     - name: Build ios
-  #       run: /Users/runner/go/bin/fyne package -os ios -appID cn.edu.bupt.sdmda.tranclient -name TranClient -icon Icon.png
-  #     - name: Zip app folder for darwin release
-  #       run: zip -q -r /Users/runner/work/tranhost-client/tranhost-client/TranClient.app.ios.zip /Users/runner/work/tranhost-client/tranhost-client/TranClient.app
-
-#     - name: Upload ios package to release
-#       uses: svenstaro/upload-release-action@v2
-#       with:
-#         repo_token: ${{ secrets.GITHUB_TOKEN }}
-#         file: /Users/runner/work/tranhost-client/tranhost-client/TranClient.app.ios.zip
-#         asset_name: TranHost.app.ios.zip
-#         tag: ${{ github.ref }}
-#         overwrite: true
-#         body: ""
+      - name: Upload darwin package to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /Users/runner/work/tranhost-client/tranhost-client/fyne-cross/dist/darwin-amd64/tranhost-client.app.zip
+          asset_name: tranhost-client.app.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: ""
