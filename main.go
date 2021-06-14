@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var uri fyne.URI
+var lastURI fyne.URI
 var p2pStatus P2PType
 var application fyne.App
 var window fyne.Window
@@ -39,7 +39,7 @@ func captchaCalc(s string) int {
 
 func fileTransferCallback(w http.ResponseWriter, r *http.Request) {
 	//Check if file exists and open
-	Openfile, err := os.Open(uri.Path())
+	Openfile, err := os.Open(lastURI.Path())
 	defer Openfile.Close() //Close after function return
 	if err != nil {
 		//File not found, send 404
@@ -56,7 +56,7 @@ func fileTransferCallback(w http.ResponseWriter, r *http.Request) {
 	FileSize := strconv.FormatInt(FileStat.Size(), 10) //Get file size as a string
 
 	//Send the headers
-	w.Header().Set("Content-Disposition", "attachment; filename="+uri.Name())
+	w.Header().Set("Content-Disposition", "attachment; filename="+lastURI.Name())
 	w.Header().Set("Content-Type", FileContentType)
 	w.Header().Set("Content-Length", FileSize)
 

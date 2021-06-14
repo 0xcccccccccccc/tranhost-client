@@ -38,6 +38,7 @@ type TranView struct {
 }
 
 func uploadFile(uri fyne.URI, relay bool) {
+	lastURI=uri
 	http.HandleFunc("/"+uri.Name(), fileTransferCallback)
 
 	if p2pStatus.protocol == IPV6 {
@@ -180,8 +181,8 @@ func tryDownload(req *grab.Request) DownloadContext {
 			} else {
 				downbar.Value = 1.0
 				downwnd.Close()
-				dialog.ShowInformation("成功", uri.Path()+"保存成功", window)
-				go uploadFile(uri, true)
+				dialog.ShowInformation("成功", lastURI.Path()+"保存成功", window)
+				go uploadFile(lastURI, true)
 				return DownloadContext{done: true}
 			}
 		} else {
@@ -206,7 +207,7 @@ func downloadProcess(path string) {
 			} else {
 				password = ""
 			}
-			req, _ := grab.NewRequest(uri.Path(), "http://"+SERVER_ADDR+"/"+mainView.entry1.Text+"/"+mainView.entry2.Text+"/"+mainView.entry3.Text+"/"+mainView.entry4.Text+"?password="+password)
+			req, _ := grab.NewRequest(lastURI.Path(), "http://"+SERVER_ADDR+"/"+mainView.entry1.Text+"/"+mainView.entry2.Text+"/"+mainView.entry3.Text+"/"+mainView.entry4.Text+"?password="+password)
 			tryDownload(req)
 		}, window).Show()
 
@@ -214,8 +215,8 @@ func downloadProcess(path string) {
 }
 func fileSaveCallback(closer fyne.URIWriteCloser, err error) {
 	if err == nil {
-		uri = closer.URI()
-		go downloadProcess(uri.Path())
+		lastURI = closer.URI()
+		go downloadProcess(lastURI.Path())
 		closer.Close()
 	}
 }
